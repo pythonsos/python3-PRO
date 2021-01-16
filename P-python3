@@ -1,0 +1,338 @@
+from tkinter import *                # Libreria estándar para la interfaz gráfica        
+from tkinter import messagebox       # Libreria para mensajes emergentes
+import sqlite3                       # Libreria para conexión con base de datos sqlite3
+import tkinter as tk                 # Libreria complementaria para ciertas funciones
+
+
+
+#--------------------------------------------------------Funciones generales---------------------------------------------------------------
+
+
+
+def infolicencia():                                                                             # Función que sirve para dar información por pantalla
+    messagebox.showinfo("Licencia ", "Este programa esta bajo licencia de Software Libre.")
+
+def infoacerde():
+    messagebox.showwarning("Proyecto de software libre", "Este proyecto aún se encuentra en etapa de desarollo.")       # Función que sirve para dar información por pantalla
+
+def infoconsejos():                                                                                               # Función que sirve para dar información por pantalla
+    messagebox.showinfo("Consejos","""
+            -No deje ninguna casilla sin rellenar.
+            -Solo ingrese ids numéricos.
+            -Sea específico con los datos que ingrese.
+            -Escriba correctamente las historias.
+            -Limpie todas las casillas antes de crear otra historia.
+            -Si observas que no se ha cambiado la fuente del cuadro
+             de texto, es debido a que te colocó el mismo tipo de fuente.
+             Esto puede suceder varias veces, solo debes hacer click de 
+             nuevo en la opción correspondiente hasta que consigas el estilo
+             de fuente deseado.
+        """)
+
+def salirdeaplicacion():                                                        # Función de cierre de aplicación
+    valor=messagebox.askquestion("Salir","¿Deseas salir de la aplicación?")
+
+    if valor=="yes":
+        root.destroy()
+
+def forzarcierre():              # Función de cierre directo de aplicación 
+    root.quit()
+
+def eliminardatos():                                                      # Función para eliminar datos de la base de datos
+    conexion = sqlite3.connect('BDCuentidoy.db')
+    cursor= conexion.cursor()
+    cursor.execute("DELETE FROM cuentos WHERE id_historia=" + id_historia.get())
+    conexion.commit()
+    conexion.close()
+    id_historia.delete(0, tk.END)
+    historia.delete(0, tk.END)
+    autor.delete(0, tk.END)
+    fecha.delete(0, tk.END)
+    cuadro_texto.delete(1.0, tk.END)
+    messagebox.showinfo("Aviso","El elemento ha sido eliminado exitosamente.")
+
+def actualizarDatos():                                                       # Función para actualizar datos de la base de datos
+    conexion = sqlite3.connect('BDCuentidoy.db')
+    cursor= conexion.cursor()
+    cursor.execute("UPDATE cuentos set historia=?, autor=?,fecha=?,cuadro_texto=? WHERE id_historia=?", (historia.get(), autor.get(),fecha.get(),cuadro_texto.get(1.0, "end"),id_historia.get()))
+    conexion.commit()
+    conexion.close()
+    id_historia.delete(0, tk.END)
+    historia.delete(0, tk.END)
+    autor.delete(0, tk.END)
+    fecha.delete(0, tk.END)
+    cuadro_texto.delete(1.0, tk.END)
+    messagebox.showinfo("Aviso","El elemento ha sido actualizado exitosamente.")
+
+
+def conexion_bd():                                                       # Función para conectar con la base de datos
+    conexion = sqlite3.connect('BDCuentidoy.db')
+    cursor= conexion.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS cuentos (id_historia INTEGER PRIMARY KEY AUTOINCREMENT ,Historia TEXT, Autor TEXT, Fecha, cuadro_texto TEXT)")
+    conexion.commit()
+    conexion.close()
+    messagebox.showinfo("Aviso de Conexión","Conexión con Base de Datos establecida.")
+
+
+def borrar_campos():                            # Función para borrar los campos 
+    id_historia.delete(0, tk.END)
+    historia.delete(0, tk.END)
+    autor.delete(0, tk.END)
+    fecha.delete(0, tk.END)
+    cuadro_texto.delete(1.0, tk.END)
+
+
+
+def Crear_datos():                # Función para crear datos en la base de datos
+    try:
+        conexion = sqlite3.connect('BDCuentidoy.db')
+        cursor= conexion.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS cuentos (id_historia INTEGER PRIMARY KEY AUTOINCREMENT , historia TEXT, autor TEXT,fecha TEXT,cuadro_texto TEXT)")
+        cursor.execute('INSERT INTO cuentos (id_historia, historia, autor,fecha,cuadro_texto) VALUES (?,?,?,?,?)', (id_historia.get(),historia.get(), autor.get(),fecha.get(),cuadro_texto.get(1.0, "end")))
+        conexion.commit()
+        messagebox.showinfo("Aviso","Ha sido creada su historia exitosamente.")
+
+    except:
+        sqlite3.IntegrityError
+
+def leer_datos():                           #Función para leer los datos de la base de datos
+    try:
+        conexion = sqlite3.connect('BDCuentidoy.db')
+        cursor= conexion.cursor()
+        cursor.execute("SELECT * FROM cuentos WHERE id_historia = " + id_historia.get())
+        elusuario=cursor.fetchall()
+
+        for usuario in elusuario:
+         id_historia.delete(0, tk.END)
+         historia.delete(0, tk.END)
+         autor.delete(0, tk.END)
+         fecha.delete(0, tk.END)
+         cuadro_texto.delete(1.0, tk.END)
+
+
+         id_historia.insert(tk.END,usuario[0])
+         historia.insert(tk.END,usuario[1])
+         autor.insert(tk.END,usuario[2])
+         fecha.insert(tk.END,usuario[3])
+         cuadro_texto.insert(tk.END,usuario[4])
+
+  
+        conexion.commit()
+
+    except:
+        sqlite3.OperationalError
+
+
+
+from tkinter import colorchooser            # libreria para invocar al asistente de colores                    
+def asistente_color():                                 # Permite escoger un color específico para el cuadro de texto
+    color = colorchooser.askcolor(title="Selecciona un color")
+    cuadro_texto.configure(background=color[1])
+
+
+def asistente_color_font():                     # Permite escoger un color específico para la fuente del texto        
+    color = colorchooser.askcolor(title="Selecciona un color")
+    cuadro_texto.configure(foreground=color[1])
+
+
+
+def estiloFuente():                             # Muestra un mensaje por pantalla
+   messagebox.showinfo("Aviso","Pronto habrán más fuentes disponibles.")
+
+
+   
+from random import choice  # Libreria para selección aleatoria (las fuentes en este caso)
+
+def estilo_fuentes():       # Permite seleccionar aleatoriamente estilos de fuentes
+
+    lis_fuentes=(("Jokerman",9),("Calibri (Cuerpo)",11),("Times New Roman",12),("Baskerville Old Face",12))
+    cuadro_texto.config(font=choice(lis_fuentes))
+
+
+
+
+
+#--------------------------------------------------------Ventana y Menú de aplicación--------------------------------------------------------------------------
+
+root=Tk()
+barramenu=Menu(root)
+root.title("Cuentidoy")                                 # Configuración de ventana
+root.geometry("900x470")
+root.resizable(0,0)
+root.config(menu=barramenu,width=300,height=300)
+root.config(bg="white")
+
+
+menu_base_de_datos=Menu(barramenu,tearoff=0)                                     # Etiquetas del menú superior
+menu_base_de_datos.add_command(label="Conectar",command=conexion_bd)
+menu_base_de_datos.add_command(label="Salir",command=salirdeaplicacion)
+menu_base_de_datos.add_command(label="Forzar cierre",command=forzarcierre)
+
+
+
+menu_eliminar=Menu(barramenu,tearoff=0)                                          # Etiquetas del menú superior                          
+menu_eliminar.add_command(label="Borrar(Casillas)",command=borrar_campos)
+
+
+menu_herramientas=Menu(barramenu,tearoff=0)                                      # Etiquetas del menú superior
+menu_herramientas.add_command(label="Crear",command=Crear_datos)
+menu_herramientas.add_command(label="Leer",command=leer_datos)
+menu_herramientas.add_command(label="Actualizar",command=actualizarDatos)
+menu_herramientas.add_command(label="Eliminar",command=eliminardatos)
+
+
+menu_ayuda=Menu(barramenu,tearoff=0)                                             # Etiquetas del menú superior
+menu_ayuda.add_command(label="Acerca de",command=infoacerde)
+menu_ayuda.add_command(label="Licencia",command=infolicencia)
+menu_ayuda.add_command(label="Consejos",command=infoconsejos)
+
+
+
+Estilo=Menu(barramenu,tearoff=0)                         # Estructura inicial de la sublista
+sub_lista_estilo=Menu(Estilo,tearoff=0)
+sub_lista_estilo2=Menu(sub_lista_estilo,tearoff=0)
+sub_lista_estilo =Menu(barramenu,tearoff=0)
+
+
+Estilo.add_cascade(label="Color",menu=sub_lista_estilo)
+sub_lista_estilo.add_command(label="Color Fondo",command=asistente_color)       # Sublista menú superior para cambiar los colores de fondo y de fuente
+sub_lista_estilo.add_command(label="Color Fuente",command=asistente_color_font)
+
+
+
+
+sub_lista_estilo_botones=Menu(Estilo,tearoff=0)             # Sublista menú superior para cambiar el estilo de los botones y los colores
+sub_lista_estilo_botones2=Menu(sub_lista_estilo_botones,tearoff=0)
+sub_lista_estilo_botones =Menu(barramenu,tearoff=0)
+sub_lista_estilo_botones2.add_cascade(label="Color",underline=0)
+
+Estilo.add_cascade(label="Fuentes",menu=sub_lista_estilo_botones)     # Sublista menú superior para cambiar el estilo de fuente aleatoriamente
+sub_lista_estilo_botones.add_command(label="Aleatorias",command=estilo_fuentes)
+sub_lista_estilo_botones.add_command(label="Más",command=estiloFuente)
+
+
+
+barramenu.add_cascade(label="BD",menu=menu_base_de_datos)                       # Etiquetas del menu superior
+barramenu.add_cascade(label="Borrar",menu=menu_eliminar)
+barramenu.add_cascade(label="Herramientas",menu=menu_herramientas)
+barramenu.add_cascade(label="Estilo",menu=Estilo)    
+barramenu.add_cascade(label="Ayuda",menu=menu_ayuda)
+
+
+
+#------------------------------------------Etiquetas----------------------------------------------------------
+
+historia= Label(root, text="Historia")          # Etiquetas de los entry
+historia.grid(row=2,column=2,padx=5,pady=5)
+historia.config(bg="white")
+
+autor= Label(root, text="Autor")                # Etiquetas de los entry
+autor.grid(row=2,column=4,padx=5,pady=5)        
+autor.config(bg="white")
+
+fecha= Label(root, text="Fecha")                 # Etiquetas de los entry
+fecha.grid(row=2,column=13,padx=5,pady=5)
+fecha.config(bg="white")
+
+id_mitos= Label(root, text="ID")                 # Etiquetas de los entry
+id_mitos.grid(row=4,column=2,padx=5,pady=5)
+id_mitos.config(bg="white")
+
+
+
+#--------------------------------------Los Entry --------------------------------------------------------
+
+
+id_historia= StringVar()                                              # Cuadro de entrada de datos
+id_historia = Entry(root, textvariable=id_historia)
+id_historia.grid(row=4,column=3,padx=5,pady=5)
+
+
+historia = StringVar()                                      # Cuadro de entrada de datos
+historia = Entry(root, textvariable=historia)
+historia.grid(row=2,column=3,padx=5,pady=5)
+
+
+autor = StringVar()                                     # Cuadro de entrada de datos
+autor = Entry(root, textvariable=autor)
+autor.grid(row=2,column=5,padx=5,pady=5)
+
+
+fecha = StringVar()                                     # Cuadro de entrada de datos
+fecha = Entry(root, textvariable=fecha)
+fecha.grid(row=2,column=18,padx=5,pady=5)
+
+
+cuadro_texto=Text(root,width=109,height=22,font=("Baskerville Old Face",12))    # Cuadro de texto para lectura y escritura
+cuadro_texto.config(bg="#3f64f8")
+cuadro_texto.place(x=3,y=100)
+scrollvert=Scrollbar(root,command=cuadro_texto.yview)        # Barra vertical de desplazamiento de texto
+scrollvert.place(x=882,y=100)                                # Barra vertical de desplazamiento de texto
+cuadro_texto.config(yscrollcommand=scrollvert.set)           # Barra vertical de desplazamiento de texto
+
+
+
+
+#-------------------------------------------------------------Botones--------------------------------------------------------------------
+
+from tkinter.ttk import *        # Libreria para este tipo de Boton
+   
+style1=Style()                                           # Boton para crear datos en la Base de datos
+style1.configure('TButton', font = 
+             ('calibri', 10, 'bold', 'underline'), 
+                background='black',
+                foreground = 'green')
+bt1=Button(root, text = "Crear",command=Crear_datos) 
+bt1.place(x=3,y=70)
+
+
+
+style1=Style()                                           # Boton para leer datos de la Base de datos
+style1.configure('TButton', font = 
+             ('calibri', 10, 'bold', 'underline'),
+                activebackground="red", 
+                foreground = 'green')
+bt2=Button(root, text = "Leer",command=leer_datos) 
+bt2.place(x=70,y=70)
+
+
+style1=Style()                                           # Boton para actualizar datos de la Base de datos
+style1.configure('TButton', font = 
+             ('calibri', 10, 'bold', 'underline'), 
+                foreground = 'green')
+bt3=Button(root, text = "Actualizar",command=actualizarDatos) 
+bt3.place(x=150,y=70)
+
+
+style1=Style()                                           # Boton para eliminar datos de la Base de datos
+style1.configure('TButton', font = 
+             ('calibri', 10, 'bold', 'underline'), 
+                foreground = 'green')
+bt4=Button(root, text = "Eliminar",command=eliminardatos) 
+bt4.place(x=230,y=70)
+
+
+
+style1=Style()                                           # Boton para cambiar el color del fondo del cuadro de texto
+style1.configure('TButton', font = 
+             ('calibri', 10, 'bold', 'underline'),
+                foreground = 'green')
+bt5=Button(root, text = "Fondo",command=asistente_color) 
+bt5.place(x=810,y=70)
+
+
+
+style1=Style()                                           # Boton para cambiar el color de la fuente del cuadro de texto
+style1.configure('TButton', font = 
+             ('calibri', 10, 'bold', 'underline'), 
+                foreground = 'green')
+bt6=Button(root, text = "Texto",command=asistente_color_font) 
+bt6.place(x=740,y=70)
+
+
+
+
+
+
+#------------------------------------------------------------------------------Bucle de ventana--------------------------------------------------------------------
+root.mainloop() # Permite tener abierta la ventana
